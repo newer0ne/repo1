@@ -7,7 +7,7 @@ WORKDIR /app
 # Скопируйте файлы вашего приложения в контейнер
 COPY app.py /app/app.py
 COPY requirements.txt /app/requirements.txt
-COPY credentials.json /app/credentials.json
+COPY credentials_db.json /app/credentials_db.json
 COPY logo.jpg /app/logo.jpg
 
 # Установите зависимости вашего приложения
