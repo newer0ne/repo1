@@ -5,19 +5,19 @@ import json
 
 with open('credentials_db.json') as f:
     credentials_db = json.load(f)
+
+    # Установка подключения к PostgreSQL серверу
+conn = psycopg2.connect(
+    host = credentials_db['host'],
+    port = credentials_db['port'],
+    database = credentials_db['database'],
+    user = credentials_db['user'],
+    password = credentials_db['password'])
     
 Link_Dynam_video = "https://youtu.be/ebLbUOP4Fxw"
 Link_Static_video = "https://youtu.be/tOUJIJZPC0c"
 
 def sql_select_reqest(columns, table): 
-    # Установка подключения к PostgreSQL серверу
-    conn = psycopg2.connect(
-        host = credentials_db['host'],
-        port = credentials_db['port'],
-        database = credentials_db['database'],
-        user = credentials_db['user'],
-        password = credentials_db['password'])
-    
     cur = conn.cursor()
     columns_str = ', '.join(columns)
     query = f"SELECT {columns_str} FROM {table}"
