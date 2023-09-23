@@ -2,3 +2,4 @@ gspread
 pandas
 gsheetsdb
 streamlit
+psycopg2

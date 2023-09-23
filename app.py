@@ -1,20 +1,46 @@
-import gspread
-from google.oauth2 import service_account
+import psycopg2
 import streamlit as st
 import pandas as pd
+import json
 
-scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-credentials = service_account.Credentials.from_service_account_file('credentials.json', scopes=scope)
-client = gspread.authorize(credentials)
-
-sheet = client.open_by_key('1nT9XdPnloGnd7zetMkk9QUUweCp5P4BRv6_16Ros0Vc').sheet1
-
-data = sheet.get_all_records(value_render_option='UNFORMATTED_VALUE')
-
-Cat = pd.DataFrame(data)
-
+with open('credentials_db.json') as f:
+    credentials_db = json.load(f)
+    
 Link_Dynam_video = "https://youtu.be/ebLbUOP4Fxw"
 Link_Static_video = "https://youtu.be/tOUJIJZPC0c"
+
+def sql_select_reqest(columns, table): 
+    # Установка подключения к PostgreSQL серверу
+    conn = psycopg2.connect(
+        host = credentials_db['host'],
+        port = credentials_db['port'],
+        database = credentials_db['database'],
+        user = credentials_db['user'],
+        password = credentials_db['password'])
+    
+    cur = conn.cursor()
+    columns_str = ', '.join(columns)
+    query = f"SELECT {columns_str} FROM {table}"
+    cur.execute(query) 
+    rows = cur.fetchall()
+    df = pd.DataFrame(rows, columns=columns)
+    return df
+
+columns = ['note', 'mark', 'sine', 'name', 'mass', 'fz_minus', 'developer', 'status']
+table = 'final_tab'
+
+df = sql_select_reqest(columns, table)
+df['mass'] = pd.to_numeric(df['mass'], errors='coerce')
+df['mass'] = df['mass'].round(2)
+Cat = df.rename(columns={'note': 'Note',
+                        'mark': 'Каталог КТ-2',
+                        'sine': 'Обозначение чертежа',
+                        'name': 'Наименование чертежа',
+                        'mass': 'Масса, кг',
+                        'fz_minus': 'Нагрузка kN',
+                        'developer': 'Разработчик',
+                        'status': 'Состояние документа',
+                        })
 
 # Отображаемый заголовок страницы
 
@@ -26,6 +52,8 @@ st.markdown("<h2 style='text-align: center;'>Группа Автоматизац
 st.markdown("""<h5 style='text-align: center;'>Данный ресурс
 был инициативно разработан в рамках работ по созданию Группы Автоматизации 
 с целью ускорения рабочих процессов внутри КТ-2 ОИТ ПКГ</h5>""", unsafe_allow_html=True)
+
+###### Расширяемая область "Пример работы параметрических подвесок"
 
 with st.expander("Пример работы параметрических подвесок"):
     tab1, tab2 = st.tabs(["Динамическая подвеска", "Статическая подвеска"])
@@ -41,6 +69,8 @@ with st.expander("Пример работы параметрических по�
         link_Static_video_toclic = '[Статическая подвеска](https://drive.google.com/file/d/1zPCz3aTlSNoIJmzN3WSn0gQq4pKchv78)'
         st.markdown(link_Static_video_toclic, unsafe_allow_html=True)
         st.video(Link_Static_video)
+
+###### Расширяемая область "Документация отдела"
 
 with st.expander("Документация отдела"):
     tab3, tab4, tab5 = st.tabs(["Документация отдела", "Каталоги в формате PDF", "ОСТ и ГОСТ"])
@@ -90,15 +120,15 @@ with st.expander("Документация отдела"):
         link_pdf_ost24_125_127 = '[ОСТ 24.125.127 - Блоки хомутовые для вертикальных трубопроводов](https://drive.google.com/file/d/1XkZHXuB5MNkD5fYvYqE0IX2CinaV4NIQ/view?usp=sharing)'
         st.markdown(link_pdf_ost24_125_127, unsafe_allow_html=True)
 
+###### Расширяемая область "Общая таблица соответствия"
+
 with st.expander("Общая таблица соответствия"):
     st.write('Данная таблица включает в себя информацию по каталогу Аккую, Lisega, Л8, ЦКТИ и их соответствие элементам ОПС КТ-2. Пользуясь поисковым интерфейсом в нижней части окна можно найти требуемое изделие.')
-    show_Cat = Cat
-    show_Cat.rename(columns = {'KT2':'Каталог КТ2','Обозначение':'Обозначение чертежа', 'Наименование':'Наименование чертежа', 'Масса':'Масса, кг', 'Нагрузка':'Нагрузка, kN', 'Состояние':'Состояние документа'}, inplace = True)
-    st.dataframe(data = show_Cat)
+    st.dataframe(Cat)
     title_AKU_EN = st.text_input('Поле ввода для поиска по столбцу Note', 'WS.1.010.C.F2')
-    st.dataframe(show_Cat.loc[show_Cat['Note'] == title_AKU_EN])
-    title_EN_AKU = st.text_input('Поле ввода для поиска по столбцу Каталог КТ2', 'EN-341-60-1')
-    st.dataframe(show_Cat.loc[show_Cat['Каталог КТ2'] == title_EN_AKU])  
+    st.dataframe(Cat.loc[Cat['Note'] == title_AKU_EN])
+    title_EN_AKU = st.text_input('Поле ввода для поиска по столбцу Каталог КТ-2', 'EN-341-60-1')
+    st.dataframe(Cat.loc[Cat['Каталог КТ-2'] == title_EN_AKU])
     
 st.sidebar.header('Модуль классификации ведомостей ОПС')
 st.sidebar.write("1. Загрузка ведомости опор осуществляется в формате таблиц excel с листа Sheet1")
@@ -116,7 +146,7 @@ if uploaded_file3 is not None:
     st.write(final)
     
     #Cкачиваем обработанную ведомость
-    df_xlsx = to_excel(final)
+    df_xlsx = pd.to_excel(final)
     st.sidebar.download_button(label='📥 Скачать обработанную ведомость', data=df_xlsx, file_name=uploaded_file3.name)
     if st.sidebar.button('📥 Скачать ведомость отправочных марок'):
         st.sidebar.write('Мы тоже хотим чтобы это работало')
