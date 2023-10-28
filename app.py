@@ -6,7 +6,7 @@ import json
 with open('credentials_db.json') as f:
     credentials_db = json.load(f)
 
-    # Установка подключения к PostgreSQL серверу
+# Установка подключения к PostgreSQL серверу
 conn = psycopg2.connect(
     host = credentials_db['host'],
     port = credentials_db['port'],
