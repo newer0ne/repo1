@@ -97,19 +97,20 @@ with st.expander("Документация отдела"):
         
     with tab4:
         
-        link_pdf_ttt3 = '[Московский проектный институт. Типовые технические требования. 01.PA1.0.0.TM.TT.NSN082 Ревизия В03](https://drive.google.com/file/d/1ACf4viy5IXRDdU7Ok3Di2A-LVmqmJD54/view?usp=sharing)'
+        lib = "./lib/PA1.0.0.TM.TT.NSN082_В03.pdf"
+        link_pdf_ttt3 = f'[Московский проектный институт. Типовые технические требования. 01.PA1.0.0.TM.TT.NSN082 Ревизия В03]({lib})'
         st.markdown(link_pdf_ttt3, unsafe_allow_html=True)
         
-        link_pdf_ttt4 = '[Московский проектный институт. Типовые технические требования. 01.PA1.0.0.TM.TT.NSN082 Ревизия В04](https://drive.google.com/file/d/1bm4inRO5oVe9uuA7pg813He4vAxAllhM/view?usp=sharing)'
+        link_pdf_ttt4 = '[Московский проектный институт. Типовые технические требования. 01.PA1.0.0.TM.TT.NSN082 Ревизия В04](https://drive.google.com/file/d/1bm4inRO5oVe9uuA7pg813He4vAxAllhM)'
         st.markdown(link_pdf_ttt4, unsafe_allow_html=True)
     
-        link_pdf_Lisega2010iso = '[Lisega. Стандартные опоры 2010. ISO](https://drive.google.com/file/d/1MpFCm99Qvr5wzru7MvFrWaWHL-AlciHZ/view?usp=sharing)'
+        link_pdf_Lisega2010iso = '[Lisega. Стандартные опоры 2010. ISO](https://drive.google.com/file/d/1MpFCm99Qvr5wzru7MvFrWaWHL-AlciHZ)'
         st.markdown(link_pdf_Lisega2010iso, unsafe_allow_html=True)
     
-        link_pdf_Lisega2010ost = '[Lisega. Стандартные опоры 2010. ОСТ](https://drive.google.com/file/d/14MpB56BfkJSchpWZllVL_vMHY2OZStYM/view?usp=sharing)'
+        link_pdf_Lisega2010ost = '[Lisega. Стандартные опоры 2010. ОСТ](https://drive.google.com/file/d/14MpB56BfkJSchpWZllVL_vMHY2OZStYM)'
         st.markdown(link_pdf_Lisega2010ost, unsafe_allow_html=True)
     
-        link_pdf_Lisega2020iso = '[Lisega. Стандартные опоры 2020. ISO](https://drive.google.com/file/d/1X5zwYRjoh9qRU1o8PJdHALdGpGiIfYck/view?usp=sharing)'
+        link_pdf_Lisega2020iso = '[Lisega. Стандартные опоры 2020. ISO](https://drive.google.com/file/d/1X5zwYRjoh9qRU1o8PJdHALdGpGiIfYck)'
         st.markdown(link_pdf_Lisega2020iso, unsafe_allow_html=True)
             
     with tab5:
