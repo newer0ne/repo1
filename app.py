@@ -2,6 +2,19 @@ import psycopg2
 import streamlit as st
 import pandas as pd
 import json
+import xlrd
+from io import BytesIO
+import base64
+
+def get_download_link(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, index=False, sheet_name='Sheet1')
+    writer.book.close()  # Закрыть рабочую книгу
+    excel_data = output.getvalue()
+    b64 = base64.b64encode(excel_data).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="{uploaded_file3.name}">📥 Скачать обработанную ведомость</a>'
+    return href
 
 with open('credentials_db.json') as f:
     credentials_db = json.load(f)
@@ -32,6 +45,9 @@ table = 'final_tab'
 df = sql_select_reqest(columns, table)
 df['mass'] = pd.to_numeric(df['mass'], errors='coerce')
 df['mass'] = df['mass'].round(2)
+df['fz_minus'] = pd.to_numeric(df['fz_minus'], errors='coerce')
+df['fz_minus'] = df['fz_minus'].round(2)
+
 Cat = df.rename(columns={'note': 'Note',
                         'mark': 'Каталог КТ-2',
                         'sine': 'Обозначение чертежа',
@@ -97,20 +113,19 @@ with st.expander("Документация отдела"):
         
     with tab4:
         
-        lib = "./lib/PA1.0.0.TM.TT.NSN082_В03.pdf"
-        link_pdf_ttt3 = f'[Московский проектный институт. Типовые технические требования. 01.PA1.0.0.TM.TT.NSN082 Ревизия В03]({lib})'
+        link_pdf_ttt3 = '[Московский проектный институт. Типовые технические требования. 01.PA1.0.0.TM.TT.NSN082 Ревизия В03](https://drive.google.com/file/d/1ACf4viy5IXRDdU7Ok3Di2A-LVmqmJD54/view?usp=sharing)'
         st.markdown(link_pdf_ttt3, unsafe_allow_html=True)
         
-        link_pdf_ttt4 = '[Московский проектный институт. Типовые технические требования. 01.PA1.0.0.TM.TT.NSN082 Ревизия В04](https://drive.google.com/file/d/1bm4inRO5oVe9uuA7pg813He4vAxAllhM)'
+        link_pdf_ttt4 = '[Московский проектный институт. Типовые технические требования. 01.PA1.0.0.TM.TT.NSN082 Ревизия В04](https://drive.google.com/file/d/1bm4inRO5oVe9uuA7pg813He4vAxAllhM/view?usp=sharing)'
         st.markdown(link_pdf_ttt4, unsafe_allow_html=True)
     
-        link_pdf_Lisega2010iso = '[Lisega. Стандартные опоры 2010. ISO](https://drive.google.com/file/d/1MpFCm99Qvr5wzru7MvFrWaWHL-AlciHZ)'
+        link_pdf_Lisega2010iso = '[Lisega. Стандартные опоры 2010. ISO](https://drive.google.com/file/d/1MpFCm99Qvr5wzru7MvFrWaWHL-AlciHZ/view?usp=sharing)'
         st.markdown(link_pdf_Lisega2010iso, unsafe_allow_html=True)
     
-        link_pdf_Lisega2010ost = '[Lisega. Стандартные опоры 2010. ОСТ](https://drive.google.com/file/d/14MpB56BfkJSchpWZllVL_vMHY2OZStYM)'
+        link_pdf_Lisega2010ost = '[Lisega. Стандартные опоры 2010. ОСТ](https://drive.google.com/file/d/14MpB56BfkJSchpWZllVL_vMHY2OZStYM/view?usp=sharing)'
         st.markdown(link_pdf_Lisega2010ost, unsafe_allow_html=True)
     
-        link_pdf_Lisega2020iso = '[Lisega. Стандартные опоры 2020. ISO](https://drive.google.com/file/d/1X5zwYRjoh9qRU1o8PJdHALdGpGiIfYck)'
+        link_pdf_Lisega2020iso = '[Lisega. Стандартные опоры 2020. ISO](https://drive.google.com/file/d/1X5zwYRjoh9qRU1o8PJdHALdGpGiIfYck/view?usp=sharing)'
         st.markdown(link_pdf_Lisega2020iso, unsafe_allow_html=True)
             
     with tab5:
@@ -136,19 +151,19 @@ st.sidebar.write("1. Загрузка ведомости опор осущест
 st.sidebar.write("2. Нужно удалить две верхних строки и первые два скрытых столбца - таблица должна начинаться со столбца KKS Code (в ячейке A1)")
 st.sidebar.write("3. Определяемый столбец дожен иметь название Note")
 
-uploaded_file3 = st.sidebar.file_uploader("Область загрузки")
+uploaded_file3 = st.sidebar.file_uploader("Область загрузки", accept_multiple_files=False, type=["xls", "xlsx"])
 if uploaded_file3 is not None:
-    st.write("Filename: ", uploaded_file3.name)
-    С = pd.read_excel(uploaded_file3, sheet_name = "Sheet1", dtype = {'Note': str})
-    final = pd.merge(С, Cat, how = 'left', on = ['Note'])
-    final = final.round(1)
-    st.write('Соответствие опор запрашиваемых в ведомости.',
-             '**Развернуть** таблицу на весь экран можно кнопкой, находящейся **в правом верхнем углу** таблицы.')
-    st.write(final)
-    
-    #Cкачиваем обработанную ведомость
-    df_xlsx = pd.to_excel(final)
-    st.sidebar.download_button(label='📥 Скачать обработанную ведомость', data=df_xlsx, file_name=uploaded_file3.name)
-    if st.sidebar.button('📥 Скачать ведомость отправочных марок'):
-        st.sidebar.write('Мы тоже хотим чтобы это работало')
-        st.balloons()
+    allowed_extensions = ['.xls', '.xlsx']
+    if '.' + uploaded_file3.name.split('.')[-1] not in allowed_extensions:
+        st.error('Ошибка: Недопустимый формат файла. Пожалуйста, загрузите файл в форматах xls или xlsx.')
+    else:
+        st.write("Filename: ", uploaded_file3.name)
+        С = pd.read_excel(uploaded_file3, sheet_name="Sheet1", dtype={'Note': str})
+        final = pd.merge(С, Cat, how='left', on=['Note'])
+        final = final.round(1)
+        st.write('Соответствие опор запрашиваемых в ведомости.',
+                 '**Развернуть** таблицу на весь экран можно кнопкой, находящейся **в правом верхнем углу** таблицы.')
+        st.write(final)
+
+        # Предоставляем ссылку для скачивания файла
+        st.sidebar.markdown(get_download_link(final), unsafe_allow_html=True)
